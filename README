@@ -1,0 +1,89 @@
+PUD v2.0.0, Peer-to-peer Cluster Control System
+Author: contem
+
+Provides a peer-to-peer network of bots with the following features:
+  * Public-private key cryptography to prevent unauthorized access.
+    * The pudclient generates a master key, only the master key can access
+      the network.
+    * Each pud server also generates a server key to verify the authenticity of
+      each peer.
+  * A protocol that cannot be disrupted by adversaries.
+  * Supports issuing remote commands and opening proxies to each machine.
+
+How to:
+
+1) First 'make' compile the pud and pudclient binaries.
+
+2) Construct a new master public key:
+
+      home# pudclient create-network
+      ...
+
+   This will take a few minutes and will store the generated master key in the
+   /tmp/pudclient.state file. DO NOT LOSE THIS MASTER KEY! If you lose this key
+   you will no longer be able to access the network.
+
+3) Start a new network with the generated master key:
+
+      box1# pud new-network [...master key...]
+      >>> Building peer public key
+      ..........................................+++
+      ...............+++
+      >>> Listening on port 38970
+      >>> Forking into the background
+
+   This will start the pud network and generate a server key which it stored by
+   default in the /tmp/pud.state file. Make note of the port that it's listening
+   on, as each peer will listen on a different port to prevent port scanning
+   from finding the network.
+
+4) You can attach other peers to the network by specifying an IP and port of
+   another peer.
+
+      box2# pud attach [ip]:[port]
+      >>> Building peer public key
+      ........+++
+      .......................................................+++
+      >>> Listening on port 18309
+      >>> Attempting to attach to network 127.0.0.1:38970
+      >>> Fetching peer list
+      >>> Attached to network
+      >>> Forking into the background
+
+5) If a peer ever restarts or dies, you can simply call:
+
+      box2# pud load
+      ...
+
+   Which will reload the pud daemon and re-attach it to the network. The list of
+   peers is saved to the state file so it's not required that you specify it
+   again.
+
+6) Sync your pudclient with the network by specifying an IP and port of any
+   peer.
+
+      home# pudclient sync [ip]:[port]
+      >>> Fetching peer list...Done
+
+7) To list the peers on the network:
+
+      home# pudclient list
+      Ident            Endpoint              Last Ping (s)   
+      -----            --------              -------------   
+      349527e13d9d531e 127.0.0.1:18309       113             
+      3a28aa870802e4cc 127.0.0.1:38970       113           
+
+  Note the peer list doesn't refresh automatically, you need to run the "sync"
+  command in step (6) to update the list of peers.
+
+8) You can issue commands to specific peers using the pudclient:
+
+      home# pudclient command [ip]:[port] ls
+      >>> Sending command to peer...
+      >>> Relay successfully opened
+      bin   home            lib64       opt     run   tmp vmlinuz.old
+      boot  initrd.img      lost+found  proc	  sbin	usr
+      dev   initrd.img.old  media	      srv     var   etc
+      lib   mnt             root        sys     vmlinuz
+      >>> Connection closed
+
