@@ -1,5 +1,5 @@
 PUD v2.0.0, Peer-to-peer Cluster Control System
-Author: contem
+Author: anonymous
 
 Provides a peer-to-peer network of bots with the following features:
   * Public-private key cryptography to prevent unauthorized access.
